@@ -1,0 +1,8 @@
+/bodhi-dotnet-superagent-test/*
+/bodhi-dotnet-superagent/obj
+/bodhi-dotnet-superagent/bin
+/TestResults
+/packages
+/unirest-net (net40)/obj
+/unirest-net (net40)/bin
+/.vs/bodhi-dotnet-superagent/v14/*.suo
