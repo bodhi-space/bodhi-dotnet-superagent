@@ -6,6 +6,7 @@ namespace Bodhi.Superagent
     {
 
         private string uri;
+        private string filesUri;
         private string ns;
         private Credentials credentials;
         private BackoffConfig backoffConfig;
@@ -13,6 +14,7 @@ namespace Bodhi.Superagent
         public ClientConfig(string uri, string ns, Credentials credentials, BackoffConfig backoffConfig)
         {
             this.uri = uri;
+            this.filesUri = uri.Replace("api", "files");
             this.ns = ns;
             this.credentials = credentials;
             this.backoffConfig = backoffConfig;
@@ -50,10 +52,16 @@ namespace Bodhi.Superagent
             }
         }
 
+
         public string GetNamespaceUri()
         {
             return uri + "/" + ns;
         }
 
+
+        public string GetFilesUri()
+        {
+            return filesUri;
+        }
     }
 }

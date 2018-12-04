@@ -15,18 +15,22 @@ namespace Superagent.Test
     [TestClass]
     public class FileTest: BaseClientTest
     {
-   
+
+        private const string DEFAULT_BUCKET = "default";
+        private const string DEFAULT_CONTENT_TYPE = "text/plain";
+        private const string DEFAULT_BINARY_CONTENT_TYPE = "application/octet-stream";
+
         [TestMethod]
         public void TestUploadBody()
         {
             byte[] body = Encoding.UTF8.GetBytes("test body upload double");
             String uploadPath = "test-body-upload-dotnet/test-body-upload-dotnet.txt";
-            DeleteFile(uploadPath);
+            DeleteFile(uploadPath, DEFAULT_BUCKET);
 
 
-            Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType("text/plain"), body);
+            Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType(DEFAULT_CONTENT_TYPE), DEFAULT_BUCKET, body);
             Result<JToken> result = resultTask.GetAwaiter().GetResult();
-            TestFileResponseCreateValid(result);
+            TestFileResponseUploadValid(result);
 
         }
 
@@ -35,14 +39,14 @@ namespace Superagent.Test
         {
             byte[] body = Encoding.UTF8.GetBytes("test body upload double");
             String uploadPath = "test-body-upload-dotnet/test-body-upload-dotnet.txt";
-            DeleteFile(uploadPath);
+            DeleteFile(uploadPath, DEFAULT_BUCKET);
 
-            Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType("text/plain"), body);
+            Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType(DEFAULT_CONTENT_TYPE), DEFAULT_BUCKET, body);
             Result<JToken> result = resultTask.GetAwaiter().GetResult();
-            TestFileResponseCreateValid(result);
-            resultTask = client.UploadFile(uploadPath, new ContentType("text/plain"), body);
+            TestFileResponseUploadValid(result);
+            resultTask = client.UploadFile(uploadPath, new ContentType(DEFAULT_CONTENT_TYPE), DEFAULT_BUCKET, body);
             result = resultTask.GetAwaiter().GetResult();
-            TestFileResponseUpdateValid(result);
+            TestFileResponseUploadValid(result);
 
         }
 
@@ -53,13 +57,13 @@ namespace Superagent.Test
             using (TemporaryFile file = new TemporaryFile())
             {
                 string uploadPath = "test-body-file-dotnet/test-body-file-dotnet.txt";
-                DeleteFile(uploadPath);
+                DeleteFile(uploadPath, DEFAULT_BUCKET);
                 byte[] content = new byte[] { 3, 4, 5 };
                 File.WriteAllBytes(file, content);
 
-                Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType("application/octet-stream"), file);
+                Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType(DEFAULT_BINARY_CONTENT_TYPE), DEFAULT_BUCKET, file);
                 Result<JToken> result = resultTask.GetAwaiter().GetResult();
-                TestFileResponseCreateValid(result);
+                TestFileResponseUploadValid(result);
             }
 
         }
@@ -71,15 +75,15 @@ namespace Superagent.Test
             {
 
                 string uploadPath = "test-download-file/test-download-file.txt";
-                DeleteFile(uploadPath);
+                DeleteFile(uploadPath, DEFAULT_BUCKET);
                 byte[] content = new byte[] { 7, 8, 9 };
                 File.WriteAllBytes(file, content);
 
-                Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType("application/octet-stream"), file);
+                Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType(DEFAULT_BINARY_CONTENT_TYPE), DEFAULT_BUCKET, file);
                 Result<JToken> result = resultTask.GetAwaiter().GetResult();
-                TestFileResponseCreateValid(result);
+                TestFileResponseUploadValid(result);
 
-                Task<Result<Stream>> downloadResultTask = client.DownloadFile(uploadPath);
+                Task<Result<Stream>> downloadResultTask = client.DownloadFile(uploadPath, DEFAULT_BUCKET);
                 Result<Stream> downloadResult = downloadResultTask.GetAwaiter().GetResult();
         
                 Assert.AreEqual(HttpStatusCode.OK, downloadResult.StatusCode);
@@ -100,63 +104,17 @@ namespace Superagent.Test
 
         }
 
-        [TestMethod]
-        public void TestDownloadFileById() 
+        private void DeleteFile(string deletePath, string bucket)
         {
-
-            using (TemporaryFile file = new TemporaryFile())
-            {
-                string uploadPath = "test-download-file/test-download-file-by-id.txt";
-                DeleteFile(uploadPath);
-                byte[] content = new byte[] { 10, 11, 12 };
-                File.WriteAllBytes(file, content);
-
-                Task<Result<JToken>> resultTask = client.UploadFile(uploadPath, new ContentType("application/octet-stream"), file);
-                Result<JToken> result = resultTask.GetAwaiter().GetResult();
-                TestFileResponseCreateValid(result);
-
-                string location = result.String;
-                String id = location.Substring(location.LastIndexOf('/') + 1);
-
-                Task<Result<Stream>> downloadResultTask = client.DownloadFile(id);
-                Result<Stream> downloadResult = downloadResultTask.GetAwaiter().GetResult();
-
-                Assert.AreEqual(HttpStatusCode.OK, downloadResult.StatusCode);
-
-                Stream stream = downloadResult.Data;
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    stream.CopyTo(ms);
-                    byte[] bytesRead = ms.ToArray();
-                    Assert.AreEqual(content.Length, bytesRead.Length);
-                    for (int i = 0; i < content.Length; i++)
-                    {
-                        Assert.AreEqual(content[i], bytesRead[i]);
-                    }
-                }
-            }
-        }
-
-        private void DeleteFile(string deletePath)
-        {
-            Task<Result<JToken>> resultTask = client.DeleteFile(deletePath);
+            Task<Result<JToken>> resultTask = client.DeleteFile(deletePath, bucket);
             Result<JToken> result = resultTask.GetAwaiter().GetResult();
             Assert.IsNotNull(result);
         }
 
-        private void TestFileResponseCreateValid(Result<JToken> data)
+        private void TestFileResponseUploadValid(Result<JToken> data)
         {
-            Assert.AreEqual(HttpStatusCode.Created, data.StatusCode);
-            Assert.IsNotNull(data.String);
+            Assert.AreEqual(HttpStatusCode.Accepted, data.StatusCode);
         }
-
-        private void TestFileResponseUpdateValid(Result<JToken> data)
-        {
-            Assert.AreEqual(HttpStatusCode.NoContent, data.StatusCode);
-            Assert.IsNull(data.String);
-        }
-
 
     }
 }

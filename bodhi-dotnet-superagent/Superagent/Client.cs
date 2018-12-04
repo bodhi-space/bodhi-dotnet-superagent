@@ -26,6 +26,7 @@ namespace Bodhi.Superagent
 
         public Client(string uri, string ns, Credentials credentials, long timeout)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
             this.clientConfig = new ClientConfig(uri, ns, credentials, new BackoffConfig());
             this.credentials = clientConfig.Credentials;
             this.fileClientDelegate = new FileClient(clientConfig);
@@ -60,7 +61,6 @@ namespace Bodhi.Superagent
                 HttpRequest request = Unirest.get(fullUrl);
                 request.header("accept", "application/json");
                 credentials.SetAuthentication(request);
-                //HttpResponse<string> result = await request.asStringAsync();
                 return await request.asStringAsync();
             });
         }
@@ -131,20 +131,20 @@ namespace Bodhi.Superagent
 
 
         //FILE METHODS
-        public async Task<Result<JToken>> UploadFile(string uploadPath, ContentType contentType, byte[] body) {
-            return await fileClientDelegate.Upload(uploadPath, contentType, body);
+        public async Task<Result<JToken>> UploadFile(string uploadPath, ContentType contentType, string bucket, byte[] body) {
+            return await fileClientDelegate.Upload(uploadPath, contentType, bucket, body);
         }
 
-        public async Task<Result<JToken>> UploadFile(String uploadPath, ContentType contentType, FileInfo file) {
-            return await fileClientDelegate.Upload(uploadPath, contentType, file);
+        public async Task<Result<JToken>> UploadFile(string uploadPath, ContentType contentType, String bucket, FileInfo file) {
+            return await fileClientDelegate.Upload(uploadPath, contentType, bucket, file);
         }
 
-        public async Task<Result<Stream>> DownloadFile(String downloadPath) {
-            return await fileClientDelegate.Download(downloadPath);
+        public async Task<Result<Stream>> DownloadFile(string downloadPath, string bucket) {
+            return await fileClientDelegate.Download(downloadPath, bucket);
         }
 
-        public async Task<Result<JToken>> DeleteFile(String deletePath) {
-            return await fileClientDelegate.Delete(deletePath);
+        public async Task<Result<JToken>> DeleteFile(string deletePath, string bucket) {
+            return await fileClientDelegate.Delete(deletePath, bucket);
         }
 
         //BULK METHODS

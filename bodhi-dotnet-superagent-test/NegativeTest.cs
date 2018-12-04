@@ -17,8 +17,7 @@ namespace Superagent.Test {
         {
             Task<Result<JToken>> resultTask = client.Get("Something", null);
             Result<JToken> result = resultTask.GetAwaiter().GetResult();
-            Assert.AreEqual(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.IsNotNull(result.String);
+            Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
         }
 
     }

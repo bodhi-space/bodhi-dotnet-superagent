@@ -4,7 +4,7 @@ namespace Bodhi.Superagent
     {
         public static Environment DEV = new Environment("https://api.bodhi-dev.io");
         public static Environment TEST = new Environment("https://api.bodhi-qa.io");
-        public static Environment PROD = new Environment("https://api.bodhi.space");
+        public static Environment PROD = new Environment("https://api.hotschdules.io");
 
         private string url;
 
