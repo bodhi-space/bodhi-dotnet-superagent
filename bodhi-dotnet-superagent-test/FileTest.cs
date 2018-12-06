@@ -16,9 +16,10 @@ namespace Superagent.Test
     public class FileTest: BaseClientTest
     {
 
-        private const string DEFAULT_BUCKET = "default";
         private const string DEFAULT_CONTENT_TYPE = "text/plain";
         private const string DEFAULT_BINARY_CONTENT_TYPE = "application/octet-stream";
+
+        private const string DEFAULT_BUCKET = "apps";
 
         [TestMethod]
         public void TestUploadBody()
@@ -114,6 +115,11 @@ namespace Superagent.Test
         private void TestFileResponseUploadValid(Result<JToken> data)
         {
             Assert.AreEqual(HttpStatusCode.Accepted, data.StatusCode);
+            Assert.IsNotNull(data.Data);
+            Assert.AreEqual(1, data.Data.Children().Count<JToken>());
+            var token = data.Data.Children().First();
+            Assert.IsTrue(token is JObject);
+            Assert.AreEqual(DEFAULT_BUCKET, token["bucket"]);
         }
 
     }
